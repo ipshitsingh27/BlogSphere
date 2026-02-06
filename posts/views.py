@@ -1,0 +1,102 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Post, Category
+from interactions.models import Comment, Rating
+
+
+def post_detail(request, id):
+    post = get_object_or_404(Post, id=id, is_published=True)
+
+    comments = Comment.objects.filter(post=post).order_by("-created_at")
+    ratings = Rating.objects.filter(post=post)
+
+    avg_rating = None
+    if ratings.exists():
+        avg_rating = round(sum(r.stars for r in ratings) / ratings.count(), 1)
+
+    # Comment submit
+    if request.method == "POST" and "comment_submit" in request.POST:
+        if request.user.is_authenticated:
+            name = request.user.username
+        else:
+            name = request.POST.get("name")
+
+        text = request.POST.get("text")
+
+        if name and text:
+            Comment.objects.create(post=post, name=name, text=text)
+
+        return redirect(request.path)
+
+    # Rating submit
+    if request.method == "POST" and "rating_submit" in request.POST:
+        if request.user.is_authenticated:
+            name = request.user.username
+        else:
+            name = request.POST.get("name")
+
+        stars = request.POST.get("stars")
+
+        if name and stars:
+            Rating.objects.update_or_create(
+                post=post,
+                name=name,
+                defaults={"stars": int(stars)},
+            )
+
+        return redirect(request.path)
+
+    context = {
+        "post": post,
+        "comments": comments,
+        "avg_rating": avg_rating,
+    }
+    return render(request, "posts/detail.html", context)
+
+
+@login_required
+def create_post(request):
+    categories = Category.objects.all()
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        category_id = request.POST.get("category")
+
+        if title and content and category_id:
+            category = Category.objects.get(id=category_id)
+
+            Post.objects.create(
+                title=title,
+                content=content,
+                author=request.user,
+                category=category,
+                is_published=True,
+            )
+
+            return redirect("/")
+
+    return render(request, "posts/create_post.html", {"categories": categories})
+
+
+@login_required
+def my_posts(request):
+    posts = Post.objects.filter(author=request.user).order_by("-id")
+    return render(request, "posts/my_posts.html", {"posts": posts})
+
+
+# ✅ DELETE POST (only owner can delete)
+@login_required
+def delete_post(request, id):
+    post = get_object_or_404(Post, id=id)
+
+    # security: only author can delete
+    if post.author != request.user:
+        return redirect("/")
+
+    # delete only on POST (safer)
+    if request.method == "POST":
+        post.delete()
+        return redirect("/posts/my-posts/")
+
+    return render(request, "posts/confirm_delete.html", {"post": post})

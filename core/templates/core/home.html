@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BlogSphere</title>
+
+    <style>
+      body {
+        font-family: system-ui;
+        background: #f6f4ef;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: auto;
+        padding: 30px;
+      }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid #e7e2d9;
+      }
+      .links {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .links a {
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 700;
+      }
+      button.logout {
+        background: none;
+        border: none;
+        color: #2563eb;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .grid {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #e7e2d9;
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .tag {
+        font-size: 12px;
+        background: #efeae1;
+        padding: 4px 8px;
+        border-radius: 999px;
+      }
+      .title {
+        font-weight: 700;
+        margin: 6px 0;
+      }
+      .meta {
+        color: #666;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="nav">
+        <div><b>BlogSphere</b></div>
+
+        <div class="links">
+          <a href="/">Explore</a>
+
+          {% if user.is_authenticated %}
+          <a href="/posts/my-posts/">My Posts</a>
+          <a href="/posts/write/">Write</a>
+          <span>Hi {{ user.username }}</span>
+
+          <form method="POST" action="/logout/" style="display: inline">
+            {% csrf_token %}
+            <button class="logout" type="submit">Logout</button>
+          </form>
+
+          {% else %}
+          <a href="/login/">Login</a>
+          <a href="/signup/">Signup</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="grid">
+        {% for post in posts %}
+        <a
+          href="{% url 'post_detail' post.id %}"
+          style="text-decoration: none; color: inherit"
+        >
+          <div class="card">
+            <div class="tag">{{ post.category.name }}</div>
+            <div class="title">{{ post.title }}</div>
+            <div class="meta">By {{ post.author.username }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>

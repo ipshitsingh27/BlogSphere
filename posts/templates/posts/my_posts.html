@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>My Posts</title>
+
+    <style>
+      body {
+        font-family: system-ui;
+        background: #f6f4ef;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: auto;
+        padding: 30px;
+      }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        background: #fff;
+        padding: 14px 18px;
+        border-radius: 14px;
+        border: 1px solid #e7e2d9;
+      }
+      .links {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .links a {
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 700;
+      }
+      button.logout {
+        background: none;
+        border: none;
+        color: #2563eb;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .post {
+        background: #fff;
+        border: 1px solid #e7e2d9;
+        padding: 14px;
+        border-radius: 12px;
+        margin-top: 12px;
+      }
+      .actions a {
+        margin-right: 10px;
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="nav">
+        <div><b>My Posts</b></div>
+
+        <div class="links">
+          <a href="/">Home</a>
+          <a href="/posts/write/">Write</a>
+
+          <form method="POST" action="/logout/" style="display: inline">
+            {% csrf_token %}
+            <button class="logout" type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+
+      {% for post in posts %}
+      <div class="post">
+        <b>{{ post.title }}</b>
+        <div class="actions">
+          <a href="/posts/edit/{{ post.id }}/">Edit</a>
+          <a href="/posts/delete/{{ post.id }}/">Delete</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ post.title }} - BlogSphere</title>
+
+<style>
+body{margin:0;font-family:system-ui;background:#f6f4ef;color:#1f2328}
+.wrap{max-width:900px;margin:auto;padding:28px 18px}
+.card{background:white;border:1px solid #e7e2d9;border-radius:16px;padding:20px;margin-bottom:16px}
+.meta{color:#5b616a;font-size:14px;margin-top:6px}
+h1{margin:0}
+hr{border:none;border-top:1px solid #eee;margin:18px 0}
+label{display:block;margin-top:10px;font-weight:700}
+input,textarea,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:6px;font-family:inherit}
+textarea{min-height:110px}
+button{margin-top:12px;padding:10px 14px;border-radius:12px;border:none;background:#2563eb;color:white;font-weight:700;cursor:pointer}
+button:hover{background:#1d4ed8}
+.small{font-size:13px;color:#5b616a}
+a{color:#2563eb;text-decoration:none;font-weight:700}
+.comment{padding:12px 0;border-top:1px solid #f0f0f0}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <a href="/">← Back to Home</a>
+
+  <div class="card" style="margin-top:14px;">
+    <h1>{{ post.title }}</h1>
+    <div class="meta">By {{ post.author.username }} • {{ post.category.name }}</div>
+
+    <hr>
+
+    <div style="line-height:1.6;">
+      {{ post.content|linebreaks }}
+    </div>
+
+    <hr>
+
+    <h3 style="margin:0 0 8px;">Rating</h3>
+    <div class="small">Average rating: <b>{% if avg_rating %}{{ avg_rating }}{% else %}No ratings yet{% endif %}</b></div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="rating_submit" value="1">
+
+      {% if user.is_authenticated %}
+        <div class="small" style="margin-top:10px;">Rating as <b>{{ user.username }}</b></div>
+      {% else %}
+        <label>Your name</label>
+        <input name="name" required>
+      {% endif %}
+
+      <label>Stars (1–5)</label>
+      <select name="stars" required>
+        <option value="" selected disabled>Select</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      </select>
+
+      <button type="submit">Submit Rating</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">Comments</h3>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="comment_submit" value="1">
+
+      {% if user.is_authenticated %}
+        <div class="small">Commenting as <b>{{ user.username }}</b></div>
+      {% else %}
+        <label>Your name</label>
+        <input name="name" required>
+      {% endif %}
+
+      <label>Your comment</label>
+      <textarea name="text" required></textarea>
+
+      <button type="submit">Post Comment</button>
+    </form>
+
+    <hr>
+
+    {% if comments %}
+      {% for c in comments %}
+        <div class="comment">
+          <div><b>{{ c.name }}</b></div>
+          <div class="small">{{ c.created_at }}</div>
+          <div style="margin-top:6px;">{{ c.text|linebreaks }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="small">No comments yet.</div>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>
