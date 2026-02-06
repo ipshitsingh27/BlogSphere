@@ -1,114 +1,278 @@
 <!doctype html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="utf-8" />
     <title>BlogSphere</title>
 
     <style>
       body {
-        font-family: system-ui;
-        background: #f6f4ef;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        background: #111827;
+        color: white;
+        padding: 16px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .brand h2 {
         margin: 0;
       }
-      .wrap {
-        max-width: 1100px;
-        margin: auto;
-        padding: 30px;
-      }
+
       .nav {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        background: #fff;
-        padding: 14px 18px;
-        border-radius: 14px;
-        border: 1px solid #e7e2d9;
+        gap: 16px;
+        font-weight: 600;
       }
-      .links {
-        display: flex;
-        gap: 14px;
-        align-items: center;
-      }
-      .links a {
+      .nav a {
+        color: white;
         text-decoration: none;
-        color: #2563eb;
-        font-weight: 700;
       }
-      button.logout {
-        background: none;
+      .nav a:hover {
+        text-decoration: underline;
+      }
+      .nav .muted {
+        opacity: 0.8;
+      }
+
+      .container {
+        width: 80%;
+        margin: 26px auto;
+      }
+
+      .search-row {
+        display: flex;
+        gap: 10px;
+        margin: 18px 0;
+      }
+      .search-row input {
+        flex: 1;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 15px;
+      }
+      .search-row button {
+        padding: 12px 16px;
+        border-radius: 10px;
         border: none;
-        color: #2563eb;
+        background: #2563eb;
+        color: white;
         font-weight: 700;
         cursor: pointer;
       }
-      .grid {
-        margin-top: 30px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+
+      .category-bar {
+        margin: 10px 0 24px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
       }
-      .card {
-        background: #fff;
-        border: 1px solid #e7e2d9;
-        border-radius: 14px;
-        padding: 16px;
-      }
-      .tag {
-        font-size: 12px;
-        background: #efeae1;
-        padding: 4px 8px;
+      .chip {
+        padding: 10px 14px;
         border-radius: 999px;
+        background: #e5e7eb;
+        color: #111827;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .chip.active {
+        background: #111827;
+        color: white;
+      }
+
+      .post-card {
+        background: white;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+      .post-card h3 {
+        margin: 0 0 8px 0;
+        color: #1f2937;
+      }
+      .post-card p {
+        color: #4b5563;
+        margin: 0;
+      }
+      .author {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 10px;
+      }
+
+      /* Skeleton animation */
+      .skeleton {
+        display: none;
+      }
+      .sk-card {
+        background: white;
+        padding: 20px;
+        margin: 15px 0;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+      .line {
+        height: 14px;
+        border-radius: 8px;
+        margin: 10px 0;
+        background: linear-gradient(
+          90deg,
+          #e5e7eb 25%,
+          #f3f4f6 37%,
+          #e5e7eb 63%
+        );
+        background-size: 400% 100%;
+        animation: shimmer 1.2s infinite;
       }
       .title {
-        font-weight: 700;
-        margin: 6px 0;
+        height: 18px;
+        width: 60%;
       }
-      .meta {
-        color: #666;
-        font-size: 13px;
+      .mid {
+        width: 90%;
+      }
+      .small {
+        width: 40%;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: 0 0;
+        }
       }
     </style>
   </head>
 
   <body>
-    <div class="wrap">
-      <div class="nav">
-        <div><b>BlogSphere</b></div>
-
-        <div class="links">
-          <a href="/">Explore</a>
-
-          {% if user.is_authenticated %}
-          <a href="/posts/my-posts/">My Posts</a>
-          <a href="/posts/write/">Write</a>
-          <span>Hi {{ user.username }}</span>
-
-          <form method="POST" action="/logout/" style="display: inline">
-            {% csrf_token %}
-            <button class="logout" type="submit">Logout</button>
-          </form>
-
-          {% else %}
-          <a href="/login/">Login</a>
-          <a href="/signup/">Signup</a>
-          {% endif %}
-        </div>
+    <header>
+      <div class="brand">
+        <h2>BlogSphere 📝</h2>
       </div>
 
-      <div class="grid">
-        {% for post in posts %}
-        <a
-          href="{% url 'post_detail' post.id %}"
-          style="text-decoration: none; color: inherit"
+      <div class="nav">
+        <a href="/">Explore</a>
+        <a href="/posts/write/">Write</a>
+        <a href="/posts/my-posts/">My Posts</a>
+
+        {% if request.user.is_authenticated %}
+        <span class="muted">Hi, {{ request.user.username }}</span>
+
+        <form action="/accounts/logout/" method="post" style="display: inline">
+          {% csrf_token %}
+          <button
+            type="submit"
+            style="
+              background: none;
+              border: none;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+            "
+          >
+            Logout
+          </button>
+        </form>
+
+        {% else %}
+        <a href="/login/">Login</a>
+        <a href="/accounts/signup/">Signup</a>
+        {% endif %}
+      </div>
+    </header>
+
+    <div class="container">
+      <form class="search-row" method="get">
+        {% if selected_category %}
+        <input type="hidden" name="cat" value="{{ selected_category.id }}" />
+        {% endif %}
+        <input
+          type="text"
+          name="q"
+          placeholder="Search blogs..."
+          value="{{ q }}"
+        />
+        <button type="submit">Search</button>
+      </form>
+
+      <div>
+        {% if selected_category %} Showing posts in:
+        <b>{{ selected_category.name }}</b> {% else %} Showing:
+        <b>All Posts</b> {% endif %} {% if q %} • Search: <b>{{ q }}</b>
+        {% endif %}
+      </div>
+
+      <div class="category-bar">
+        <a class="chip {% if not selected_category %}active{% endif %}" href="/"
+          >All</a
         >
-          <div class="card">
-            <div class="tag">{{ post.category.name }}</div>
-            <div class="title">{{ post.title }}</div>
-            <div class="meta">By {{ post.author.username }}</div>
-          </div>
+        {% for c in categories %}
+        <a
+          class="chip {% if selected_category and selected_category.id == c.id %}active{% endif %}"
+          href="/?cat={{ c.id }}"
+        >
+          {{ c.name }}
         </a>
         {% endfor %}
       </div>
+
+      <h2>Latest Posts</h2>
+
+      <div id="skeleton" class="skeleton">
+        <div class="sk-card">
+          <div class="line title"></div>
+          <div class="line mid"></div>
+          <div class="line small"></div>
+        </div>
+        <div class="sk-card">
+          <div class="line title"></div>
+          <div class="line mid"></div>
+          <div class="line small"></div>
+        </div>
+        <div class="sk-card">
+          <div class="line title"></div>
+          <div class="line mid"></div>
+          <div class="line small"></div>
+        </div>
+      </div>
+
+      <div id="posts">
+        {% for post in posts %}
+        <div class="post-card">
+          <h3>{{ post.title }}</h3>
+          <p>{{ post.content|truncatewords:25 }}</p>
+          <div class="author">By {{ post.author }}</div>
+        </div>
+        {% empty %}
+        <p>No posts found.</p>
+        {% endfor %}
+      </div>
     </div>
+
+    <script>
+      const sk = document.getElementById("skeleton");
+      const posts = document.getElementById("posts");
+
+      sk.style.display = "block";
+      posts.style.display = "none";
+
+      setTimeout(() => {
+        sk.style.display = "none";
+        posts.style.display = "block";
+      }, 3000);
+    </script>
   </body>
 </html>

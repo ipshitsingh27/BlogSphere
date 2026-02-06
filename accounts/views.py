@@ -1,20 +1,25 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from .forms import CustomSignupForm
+from django.contrib.auth import login, logout
+from django.views.decorators.http import require_POST
+from django.contrib.auth.forms import UserCreationForm
 
 
+# Signup view
 def signup(request):
-    # ✅ If user is already logged in, don't show signup page
-    if request.user.is_authenticated:
-        return redirect("/")
-
     if request.method == "POST":
-        form = CustomSignupForm(request.POST)
+        form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # ✅ auto login after signup
-            return redirect("/")  # ✅ go home after signup
+            login(request, user)
+            return redirect("/")
     else:
-        form = CustomSignupForm()
+        form = UserCreationForm()
 
     return render(request, "accounts/signup.html", {"form": form})
+
+
+# Custom Logout view (FIXES WHITE SCREEN)
+@require_POST
+def logout_user(request):
+    logout(request)
+    return redirect("/")
