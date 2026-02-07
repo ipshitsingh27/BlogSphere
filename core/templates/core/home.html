@@ -90,12 +90,25 @@
         color: white;
       }
 
+      .post-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
       .post-card {
         background: white;
         padding: 20px;
         margin: 15px 0;
         border-radius: 12px;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      .post-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.12);
       }
       .post-card h3 {
         margin: 0 0 8px 0;
@@ -113,7 +126,7 @@
 
       /* Skeleton animation */
       .skeleton {
-        display: none;
+        display: block; /* ✅ show by default, then JS hides after 3 sec */
       }
       .sk-card {
         background: white;
@@ -231,6 +244,7 @@
 
       <h2>Latest Posts</h2>
 
+      <!-- ✅ Skeleton shows for 3 sec -->
       <div id="skeleton" class="skeleton">
         <div class="sk-card">
           <div class="line title"></div>
@@ -251,11 +265,13 @@
 
       <div id="posts">
         {% for post in posts %}
-        <div class="post-card">
-          <h3>{{ post.title }}</h3>
-          <p>{{ post.content|truncatewords:25 }}</p>
-          <div class="author">By {{ post.author }}</div>
-        </div>
+        <a class="post-link" href="/posts/{{ post.id }}/">
+          <div class="post-card">
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.content|truncatewords:25 }}</p>
+            <div class="author">By {{ post.author }}</div>
+          </div>
+        </a>
         {% empty %}
         <p>No posts found.</p>
         {% endfor %}
@@ -266,9 +282,11 @@
       const sk = document.getElementById("skeleton");
       const posts = document.getElementById("posts");
 
+      // show skeleton immediately, hide posts
       sk.style.display = "block";
       posts.style.display = "none";
 
+      // after 3 sec: hide skeleton, show posts
       setTimeout(() => {
         sk.style.display = "none";
         posts.style.display = "block";

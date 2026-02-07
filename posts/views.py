@@ -14,7 +14,7 @@ def post_detail(request, id):
     if ratings.exists():
         avg_rating = round(sum(r.stars for r in ratings) / ratings.count(), 1)
 
-    # ✅ Comment submit
+    # Comment submit
     if request.method == "POST" and "comment_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
@@ -30,7 +30,7 @@ def post_detail(request, id):
 
         return redirect(request.path)
 
-    # ✅ Rating submit (update if same name already rated)
+    # Rating submit
     if request.method == "POST" and "rating_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
@@ -79,8 +79,10 @@ def create_post(request):
             )
             return redirect("/")
 
-        # if form incomplete
-        return render(request, "posts/create_post.html", {"categories": categories, "error": "Please fill all fields."})
+        return render(request, "posts/create_post.html", {
+            "categories": categories,
+            "error": "Please fill all fields."
+        })
 
     return render(request, "posts/create_post.html", {"categories": categories})
 
@@ -91,7 +93,6 @@ def my_posts(request):
     return render(request, "posts/my_posts.html", {"posts": posts})
 
 
-# ✅ DELETE POST (only owner can delete)
 @login_required
 def delete_post(request, id):
     post = get_object_or_404(Post, id=id)
@@ -106,12 +107,10 @@ def delete_post(request, id):
     return render(request, "posts/confirm_delete.html", {"post": post})
 
 
-# ✅ DELETE COMMENT (only the same logged-in user can delete their own comment)
 @login_required
 def delete_comment(request, id):
     comment = get_object_or_404(Comment, id=id)
 
-    # Only allow delete if this comment belongs to this user (best) OR name matches username (fallback)
     if comment.user == request.user or comment.name == request.user.username:
         post_id = comment.post.id
         if request.method == "POST":
