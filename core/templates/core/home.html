@@ -222,7 +222,7 @@
         {% for c in categories %}
         <a
           class="chip {% if selected_category and selected_category.id == c.id %}active{% endif %}"
-          href="/?cat={{ c.id }}"
+          href="/?cat={{ c.id }}{% if q %}&q={{ q }}{% endif %}"
         >
           {{ c.name }}
         </a>
