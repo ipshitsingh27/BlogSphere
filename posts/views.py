@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Post, Category
 from interactions.models import Comment, Rating
+from django.db.models import Avg
 
 
 def post_detail(request, id):
@@ -14,7 +15,7 @@ def post_detail(request, id):
     if ratings.exists():
         avg_rating = round(sum(r.stars for r in ratings) / ratings.count(), 1)
 
-    # Comment submit
+    # ✅ Comment submit
     if request.method == "POST" and "comment_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
@@ -30,7 +31,7 @@ def post_detail(request, id):
 
         return redirect(request.path)
 
-    # Rating submit
+    # ✅ Rating submit (update if same name already rated)
     if request.method == "POST" and "rating_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
@@ -79,12 +80,44 @@ def create_post(request):
             )
             return redirect("/")
 
-        return render(request, "posts/create_post.html", {
-            "categories": categories,
-            "error": "Please fill all fields."
-        })
+        return render(
+            request,
+            "posts/create_post.html",
+            {"categories": categories, "error": "Please fill all fields."},
+        )
 
     return render(request, "posts/create_post.html", {"categories": categories})
+
+
+@login_required
+def edit_post(request, id):
+    post = get_object_or_404(Post, id=id)
+
+    # ✅ only owner can edit
+    if post.author != request.user:
+        return redirect("/")
+
+    categories = Category.objects.all()
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        category_id = request.POST.get("category")
+
+        if title and content and category_id:
+            post.title = title
+            post.content = content
+            post.category_id = category_id
+            post.save()
+            return redirect(f"/posts/{post.id}/")
+
+        return render(
+            request,
+            "posts/edit_post.html",
+            {"post": post, "categories": categories, "error": "Please fill all fields."},
+        )
+
+    return render(request, "posts/edit_post.html", {"post": post, "categories": categories})
 
 
 @login_required
