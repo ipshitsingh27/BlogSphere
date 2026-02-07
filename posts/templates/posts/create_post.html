@@ -11,30 +11,25 @@
         font-family: system-ui;
         background: #f6f4ef;
       }
-
       .wrap {
         max-width: 800px;
         margin: auto;
         padding: 30px 18px;
       }
-
       .box {
         background: white;
         padding: 22px;
         border-radius: 16px;
         border: 1px solid #e7e2d9;
       }
-
       h1 {
         margin-top: 0;
       }
-
       label {
         display: block;
         margin-top: 14px;
         font-weight: 600;
       }
-
       input,
       select,
       textarea {
@@ -45,12 +40,18 @@
         border: 1px solid #ddd;
         font-family: inherit;
       }
-
       textarea {
         min-height: 220px;
       }
-
-      button {
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .row > div {
+        flex: 1;
+      }
+      .btn {
         margin-top: 18px;
         padding: 10px 14px;
         border-radius: 12px;
@@ -60,16 +61,25 @@
         font-weight: 700;
         cursor: pointer;
       }
-
-      button:hover {
+      .btn:hover {
         background: #1d4ed8;
       }
-
       a {
         text-decoration: none;
         display: inline-block;
         margin-top: 15px;
         color: #2563eb;
+        font-weight: 700;
+      }
+      .hint {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 8px;
+      }
+      .error {
+        margin-top: 10px;
+        color: #b91c1c;
+        font-weight: 600;
       }
     </style>
   </head>
@@ -80,8 +90,42 @@
 
       <div class="box">
         <h1>Create New Blog</h1>
+        <div class="hint">
+          Fill title, select category, write content, then click Publish.
+        </div>
 
-        <form method="POST"></form>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+          {% csrf_token %}
+
+          <label>Title</label>
+          <input
+            type="text"
+            name="title"
+            placeholder="Enter post title"
+            required
+          />
+
+          <label>Category</label>
+          <select name="category" required>
+            <option value="" selected disabled>Select category</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+
+          <label>Content</label>
+          <textarea
+            name="content"
+            placeholder="Write your blog..."
+            required
+          ></textarea>
+
+          <button class="btn" type="submit">Publish</button>
+        </form>
       </div>
     </div>
   </body>

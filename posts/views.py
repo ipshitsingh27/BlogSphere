@@ -14,26 +14,30 @@ def post_detail(request, id):
     if ratings.exists():
         avg_rating = round(sum(r.stars for r in ratings) / ratings.count(), 1)
 
-    # Comment submit
+    # ✅ Comment submit
     if request.method == "POST" and "comment_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
+            user = request.user
         else:
             name = request.POST.get("name")
+            user = None
 
         text = request.POST.get("text")
 
         if name and text:
-            Comment.objects.create(post=post, name=name, text=text)
+            Comment.objects.create(post=post, user=user, name=name, text=text)
 
         return redirect(request.path)
 
-    # Rating submit
+    # ✅ Rating submit (update if same name already rated)
     if request.method == "POST" and "rating_submit" in request.POST:
         if request.user.is_authenticated:
             name = request.user.username
+            user = request.user
         else:
             name = request.POST.get("name")
+            user = None
 
         stars = request.POST.get("stars")
 
@@ -41,7 +45,7 @@ def post_detail(request, id):
             Rating.objects.update_or_create(
                 post=post,
                 name=name,
-                defaults={"stars": int(stars)},
+                defaults={"stars": int(stars), "user": user},
             )
 
         return redirect(request.path)
@@ -73,8 +77,10 @@ def create_post(request):
                 category=category,
                 is_published=True,
             )
-
             return redirect("/")
+
+        # if form incomplete
+        return render(request, "posts/create_post.html", {"categories": categories, "error": "Please fill all fields."})
 
     return render(request, "posts/create_post.html", {"categories": categories})
 
@@ -90,13 +96,26 @@ def my_posts(request):
 def delete_post(request, id):
     post = get_object_or_404(Post, id=id)
 
-    # security: only author can delete
     if post.author != request.user:
         return redirect("/")
 
-    # delete only on POST (safer)
     if request.method == "POST":
         post.delete()
         return redirect("/posts/my-posts/")
 
     return render(request, "posts/confirm_delete.html", {"post": post})
+
+
+# ✅ DELETE COMMENT (only the same logged-in user can delete their own comment)
+@login_required
+def delete_comment(request, id):
+    comment = get_object_or_404(Comment, id=id)
+
+    # Only allow delete if this comment belongs to this user (best) OR name matches username (fallback)
+    if comment.user == request.user or comment.name == request.user.username:
+        post_id = comment.post.id
+        if request.method == "POST":
+            comment.delete()
+        return redirect(f"/posts/{post_id}/")
+
+    return redirect(f"/posts/{comment.post.id}/")
